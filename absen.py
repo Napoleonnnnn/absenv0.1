@@ -103,7 +103,7 @@ def main():
 
         if "login" in driver.current_url.lower():
             print("Login gagal! CAPTCHA mungkin salah terbaca.")
-            kirim_notif("error", "Absen ERROR", "Login gagal, CAPTCHA salah terbaca.")
+            kirim_notif("gagal", "Absen ERROR", "Login gagal, CAPTCHA salah terbaca.")
             sys.exit(1)
 
         print("Login berhasil!")
@@ -138,7 +138,7 @@ def main():
         else:
             pesan = f"{absen_berhasil} absensi berhasil dilakukan."
             print(f"\n{pesan}")
-            kirim_notif("sukses", "Absen Berhasil", pesan)
+            kirim_notif("bisa", "Absen Berhasil", pesan)
 
     except Exception as e:
         print(f"Error: {e}")
