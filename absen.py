@@ -14,8 +14,6 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 import ddddocr
 
-# ── Konfigurasi ──────────────────────────────────────────────────────────────
-
 load_dotenv()
 
 NPM        = os.getenv("NPM")
@@ -25,26 +23,20 @@ BASE_URL   = "https://simkuliah.usk.ac.id"
 CACHE_FILE = Path("jadwal_cache.json")
 WIB        = ZoneInfo("Asia/Jakarta")
 
-# ── Helper: Notifikasi ────────────────────────────────────────────────────────
-
 def kirim_notif(tipe: str, judul: str, pesan: str):
-    """Kirim push notification via ntfy.sh. tipe: sukses | info | error"""
     if not NTFY_TOPIC:
         return
     topic_map = {
-        "sukses": f"{NTFY_TOPIC}-sukses",
+        "sukses": f"{NTFY_TOPIC}-bisa",
         "info":   f"{NTFY_TOPIC}-info",
-        "error":  f"{NTFY_TOPIC}-error",
+        "error":  f"{NTFY_TOPIC}-gagal",
     }
     url = f"ntfy.sh/{topic_map.get(tipe, NTFY_TOPIC)}"
     os.system(f'curl -s -H "Title: {judul}" -d "{pesan}" {url}')
 
-# ── Helper: Jadwal Cache ──────────────────────────────────────────────────────
-
 def get_jadwal_hari_ini() -> list[dict]:
-    """Baca jadwal_cache.json dan filter jadwal hari ini."""
     if not CACHE_FILE.exists():
-        print("⚠️  jadwal_cache.json tidak ditemukan — absen akan tetap dicoba.")
+        print("jadwal_cache.json tidak ditemukan — absen akan tetap dicoba.")
         return []
 
     with open(CACHE_FILE, "r") as f:
@@ -61,8 +53,6 @@ def get_jadwal_hari_ini() -> list[dict]:
             pass
     return hasil
 
-# ── Helper: Browser ───────────────────────────────────────────────────────────
-
 def buat_driver() -> webdriver.Chrome:
     options = Options()
     options.add_argument("--headless")
@@ -76,55 +66,48 @@ def buat_driver() -> webdriver.Chrome:
     )
     return webdriver.Chrome(options=options)
 
-# ── Main ──────────────────────────────────────────────────────────────────────
-
 def main():
     now = datetime.datetime.now(WIB)
-    print(f"🕐 Waktu: {now.strftime('%A, %d-%m-%Y %H:%M')} WIB")
+    print(f"Waktu: {now.strftime('%A, %d-%m-%Y %H:%M')} WIB")
 
-    # Validasi kredensial
     if not NPM or not PASSWORD:
-        print("❌ NPM atau PASSWORD tidak ditemukan di environment.")
+        print("NPM atau PASSWORD tidak ditemukan di environment.")
         sys.exit(1)
 
-    # Cek jadwal hari ini dari cache
     jadwal_hari_ini = get_jadwal_hari_ini()
     if jadwal_hari_ini:
-        print(f"📚 Jadwal hari ini ({len(jadwal_hari_ini)} sesi):")
+        print(f"Jadwal hari ini ({len(jadwal_hari_ini)} sesi):")
         for mk in jadwal_hari_ini:
             print(f"   - {mk['nama_mk']} | {mk['jam']} | {mk['ruang']}")
     else:
-        print("ℹ️  Tidak ada jadwal hari ini di cache — tetap mencoba absen.")
+        print("Tidak ada jadwal hari ini di cache — tetap mencoba absen.")
 
     driver = buat_driver()
     ocr = ddddocr.DdddOcr(show_ad=False)
 
     try:
-        # Login
-        print("\n🔐 Memulai login...")
+        print("\nMemulai login...")
         driver.get(BASE_URL)
         wait = WebDriverWait(driver, 10)
 
         wait.until(EC.presence_of_element_located((By.NAME, "username"))).send_keys(NPM)
         driver.find_element(By.NAME, "password").send_keys(PASSWORD)
 
-        # Solve CAPTCHA
         captcha_img = wait.until(EC.presence_of_element_located((By.ID, "captcha-img")))
         captcha_text = ocr.classification(captcha_img.screenshot_as_png).strip().replace(" ", "")
-        print(f"🔑 CAPTCHA terbaca: {captcha_text}")
+        print(f"CAPTCHA terbaca: {captcha_text}")
 
         driver.find_element(By.NAME, "captcha_answer").send_keys(captcha_text)
         wait.until(EC.element_to_be_clickable((By.CSS_SELECTOR, 'button[type="submit"]'))).click()
         time.sleep(3)
 
         if "login" in driver.current_url.lower():
-            print("❌ Login gagal! CAPTCHA mungkin salah terbaca.")
+            print("Login gagal! CAPTCHA mungkin salah terbaca.")
             kirim_notif("error", "Absen ERROR", "Login gagal, CAPTCHA salah terbaca.")
             sys.exit(1)
 
-        print("✅ Login berhasil!")
+        print("Login berhasil!")
 
-        # Absen
         driver.get(f"{BASE_URL}/index.php/absensi")
         time.sleep(2)
 
@@ -144,21 +127,21 @@ def main():
                 time.sleep(3)
 
                 absen_berhasil += 1
-                print(f"✅ Absen #{absen_berhasil} berhasil!")
+                print(f"Absen #{absen_berhasil} berhasil!")
 
             except Exception:
                 break
 
         if absen_berhasil == 0:
-            print("ℹ️  Tidak ada tombol absen yang tersedia.")
+            print("Tidak ada tombol absen yang tersedia.")
             kirim_notif("info", "Tidak Ada Jadwal", "Bot berjalan tapi tidak ada tombol absen.")
         else:
             pesan = f"{absen_berhasil} absensi berhasil dilakukan."
-            print(f"\n🎉 {pesan}")
+            print(f"\n{pesan}")
             kirim_notif("sukses", "Absen Berhasil", pesan)
 
     except Exception as e:
-        print(f"❌ Error: {e}")
+        print(f"Error: {e}")
         kirim_notif("error", "Absen ERROR", f"Error: {e}")
         sys.exit(1)
 
