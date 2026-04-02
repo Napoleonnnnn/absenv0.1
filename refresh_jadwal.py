@@ -1,8 +1,3 @@
-"""
-refresh_jadwal.py
-Scrape jadwal kuliah dari SimKuliah dan simpan ke jadwal_cache.json.
-Dijalankan manual atau via GitHub Actions workflow refresh.yml.
-"""
 
 import json
 import os
@@ -31,10 +26,6 @@ CACHE_FILE = Path("jadwal_cache.json")
 WIB = ZoneInfo("Asia/Jakarta")
 
 
-# ──────────────────────────────────────────────
-# Browser
-# ──────────────────────────────────────────────
-
 def buat_driver() -> webdriver.Chrome:
     options = Options()
     options.add_argument("--headless")
@@ -48,10 +39,6 @@ def buat_driver() -> webdriver.Chrome:
     )
     return webdriver.Chrome(options=options)
 
-
-# ──────────────────────────────────────────────
-# Login
-# ──────────────────────────────────────────────
 
 def login(driver: webdriver.Chrome, ocr: ddddocr.DdddOcr) -> bool:
     """Login ke SimKuliah. Return True kalau berhasil."""
@@ -77,10 +64,6 @@ def login(driver: webdriver.Chrome, ocr: ddddocr.DdddOcr) -> bool:
     print("Login berhasil!")
     return True
 
-
-# ──────────────────────────────────────────────
-# Parser satu sel pertemuan
-# ──────────────────────────────────────────────
 
 def parse_sel(sel_text: str, kode_mk: str, nama_mk: str, nomor: int) -> dict | None:
     """Parse teks satu sel pertemuan dari tabel jadwal."""
@@ -125,10 +108,6 @@ def parse_sel(sel_text: str, kode_mk: str, nama_mk: str, nomor: int) -> dict | N
     return hasil
 
 
-# ──────────────────────────────────────────────
-# Scraper jadwal
-# ──────────────────────────────────────────────
-
 def scrape_jadwal(driver: webdriver.Chrome) -> list[dict]:
     """Scrape seluruh tabel jadwal semester."""
     print("Mengambil jadwal...")
@@ -160,10 +139,6 @@ def scrape_jadwal(driver: webdriver.Chrome) -> list[dict]:
     return hasil
 
 
-# ──────────────────────────────────────────────
-# Simpan cache
-# ──────────────────────────────────────────────
-
 def simpan_cache(jadwal: list[dict]):
     data = {
         "scraped_at": datetime.datetime.now(WIB).isoformat(),
@@ -174,9 +149,6 @@ def simpan_cache(jadwal: list[dict]):
     print(f"Cache disimpan ke {CACHE_FILE} ({len(jadwal)} pertemuan).")
 
 
-# ──────────────────────────────────────────────
-# Main
-# ──────────────────────────────────────────────
 
 def main():
     print(f"Waktu: {datetime.datetime.now(WIB).strftime('%A, %d-%m-%Y %H:%M')} WIB")
