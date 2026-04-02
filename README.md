@@ -294,8 +294,8 @@ Bot ini dibuat untuk keperluan pribadi. Developer tidak bertanggung jawab atas s
 
 <div align="center">
 
-Made with too much coffee and too little sleep by [NapoleonPro](https://github.com/NapoleonPro)
+Made with too much coffee and too little sleep by [NapoleonPro](https://github.com/Napoleonnnnn)
 
-Kalau membantu, kasih ⭐ dong — gratis kok. Sekali klik. Bahkan kelen pasti bisa.
+Kalau membantu, kasih ⭐ plis . bantu untuk portfolio. hehe. moga kita masuk surga, aamiin.
 
 </div>
