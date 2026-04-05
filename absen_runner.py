@@ -4,8 +4,6 @@ import sys
 from datetime import datetime, date
 from zoneinfo import ZoneInfo
 from pathlib import Path
-from dotenv import load_dotenv
-load_dotenv()
 
 WIB = ZoneInfo("Asia/Jakarta")
 CACHE_FILE = Path("jadwal_cache.json")
