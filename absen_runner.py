@@ -4,6 +4,8 @@ import sys
 from datetime import datetime, date
 from zoneinfo import ZoneInfo
 from pathlib import Path
+from dotenv import load_dotenv
+load_dotenv()
 
 WIB = ZoneInfo("Asia/Jakarta")
 CACHE_FILE = Path("jadwal_cache.json")
@@ -35,17 +37,17 @@ def get_jadwal_hari_ini(jadwal: list[dict]) -> list[dict]:
 def kirim_notif_bisa(judul: str, pesan: str, topic: str):
     if not topic:
         return
-    os.system(f'curl -s -H "Title: {judul}" -d "{pesan}" ntfy.sh/{topic}-bisa')
+    os.system(f'curl -s -H "Title: {judul}" -d "{pesan}" ntfy.sh/{topic}')
 
 def kirim_notif_info(judul: str, pesan: str, topic: str):
     if not topic:
         return
-    os.system(f'curl -s -H "Title: {judul}" -d "{pesan}" ntfy.sh/{topic}-info')
+    os.system(f'curl -s -H "Title: {judul}" -d "{pesan}" ntfy.sh/{topic}')
 
 def kirim_notif_gagal(judul: str, pesan: str, topic: str):
     if not topic:
         return
-    os.system(f'curl -s -H "Title: {judul}" -d "{pesan}" ntfy.sh/{topic}-gagal')
+    os.system(f'curl -s -H "Title: {judul}" -d "{pesan}" ntfy.sh/{topic}')
 
 
 def main():
