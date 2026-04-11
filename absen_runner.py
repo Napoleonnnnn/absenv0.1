@@ -35,17 +35,17 @@ def get_jadwal_hari_ini(jadwal: list[dict]) -> list[dict]:
 def kirim_notif_bisa(judul: str, pesan: str, topic: str):
     if not topic:
         return
-    os.system(f'curl -s -H "Title: {judul}" -d "{pesan}" ntfy.sh/{topic}')
+    os.system(f'curl -s -H "Title: {judul}" -d "{pesan}" ntfy.sh/{topic}-bisa')
 
 def kirim_notif_info(judul: str, pesan: str, topic: str):
     if not topic:
         return
-    os.system(f'curl -s -H "Title: {judul}" -d "{pesan}" ntfy.sh/{topic}')
+    os.system(f'curl -s -H "Title: {judul}" -d "{pesan}" ntfy.sh/{topic}-info')
 
 def kirim_notif_gagal(judul: str, pesan: str, topic: str):
     if not topic:
         return
-    os.system(f'curl -s -H "Title: {judul}" -d "{pesan}" ntfy.sh/{topic}')
+    os.system(f'curl -s -H "Title: {judul}" -d "{pesan}" ntfy.sh/{topic}-gagal')
 
 def main():
     print(f" Waktu sekarang: {datetime.now(WIB).strftime('%A, %d-%m-%Y %H:%M')} WIB")
