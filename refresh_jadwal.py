@@ -40,30 +40,48 @@ def buat_driver() -> webdriver.Chrome:
     return webdriver.Chrome(options=options)
 
 
-def login(driver: webdriver.Chrome, ocr: ddddocr.DdddOcr) -> bool:
+def login(driver: webdriver.Chrome, ocr: ddddocr.DdddOcr, max_percobaan: int = 10) -> bool:
     """Login ke SimKuliah. Return True kalau berhasil."""
     print("Membuka SimKuliah...")
     driver.get(BASE_URL)
     wait = WebDriverWait(driver, 10)
 
-    wait.until(EC.presence_of_element_located((By.NAME, "username"))).send_keys(NPM)
-    driver.find_element(By.NAME, "password").send_keys(PASSWORD)
+    for percobaan in range(1, max_percobaan + 1):
+        print(f"Percobaan login ke-{percobaan}...")
 
-    captcha_img = wait.until(EC.presence_of_element_located((By.ID, "captcha-img")))
-    captcha_text = ocr.classification(captcha_img.screenshot_as_png).strip().replace(" ", "")
-    print(f"CAPTCHA terbaca: {captcha_text}")
+        # Isi username & password
+        username_field = wait.until(EC.presence_of_element_located((By.NAME, "username")))
+        username_field.clear()
+        username_field.send_keys(NPM)
 
-    driver.find_element(By.NAME, "captcha_answer").send_keys(captcha_text)
-    wait.until(EC.element_to_be_clickable((By.CSS_SELECTOR, 'button[type="submit"]'))).click()
-    time.sleep(3)
+        password_field = driver.find_element(By.NAME, "password")
+        password_field.clear()
+        password_field.send_keys(PASSWORD)
 
-    if "login" in driver.current_url.lower():
-        print("Login gagal! CAPTCHA mungkin salah terbaca.")
-        return False
+        # Baca & isi captcha
+        captcha_img = wait.until(EC.presence_of_element_located((By.ID, "captcha-img")))
+        captcha_text = ocr.classification(captcha_img.screenshot_as_png).strip().replace(" ", "")
+        print(f"  CAPTCHA terbaca: {captcha_text}")
 
-    print("Login berhasil!")
-    return True
+        captcha_field = driver.find_element(By.NAME, "captcha_answer")
+        captcha_field.clear()
+        captcha_field.send_keys(captcha_text)
 
+        wait.until(EC.element_to_be_clickable((By.CSS_SELECTOR, 'button[type="submit"]'))).click()
+        time.sleep(3)
+
+        if "login" not in driver.current_url.lower():
+            print("Login berhasil!")
+            return True
+
+        print(f"  Login gagal, CAPTCHA salah. Mencoba lagi...")
+
+        # Kembali ke halaman login untuk percobaan berikutnya
+        driver.get(BASE_URL)
+        time.sleep(1)
+
+    print(f"Login gagal setelah {max_percobaan} percobaan.")
+    return False
 
 def parse_sel(sel_text: str, kode_mk: str, nama_mk: str, nomor: int) -> dict | None:
     """Parse teks satu sel pertemuan dari tabel jadwal."""
